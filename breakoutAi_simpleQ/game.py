@@ -18,8 +18,6 @@ resolution = 10
 alpha = 0.5
 l = 0.9 #lambda
 
-
-
 STATES = {
     'Alive':0,
     'Dead':-100,
@@ -47,6 +45,7 @@ class Breakout(object):
 
 
     def __init__(self,data):
+
         self.highscore = 0
         self.isAuto = True
         self.command = 0
@@ -55,7 +54,6 @@ class Breakout(object):
 
         if data is not None:
             try:
-                print data.files
                 self.iteration = int(data['iter'])
                 self.highscore = int(data['high'])
                 self.Q = data['trainedQ']
@@ -72,6 +70,11 @@ class Breakout(object):
 
         self.screen = pygame.display.set_mode([640,480])
         self.myfont = pygame.font.SysFont("Arial",  30)
+
+        self.se_brick = pygame.mixer.Sound('sound/brick_hit.wav')
+        self.se_wall = pygame.mixer.Sound('sound/wall_hit.wav')
+        self.se_paddle = pygame.mixer.Sound('sound/paddle_hit.wav')
+
 
 
 
@@ -110,6 +113,8 @@ class Breakout(object):
 
         #check if the ball is off the bottom of the self.screen
         if self.ball_y > self.screen.get_height() - ball_radius:
+            if pygame.display.get_active():
+                self.se_wall.play()
             self.current_reward = STATES['Dead']
             self.iteration+=1
             s = 'Iteration: '+repr(self.iteration) + ', max score: ' + repr(self.score) + ', hit count: '+repr(self.paddle_hit_count)
@@ -125,12 +130,18 @@ class Breakout(object):
         if self.ball_y < ball_radius:
             self.ball_y = ball_radius
             self.ball_speed_y = -self.ball_speed_y
+            if pygame.display.get_active():
+                self.se_wall.play()
         if self.ball_x < ball_radius:
             self.ball_x = ball_radius
             self.ball_speed_x = -self.ball_speed_x
+            if pygame.display.get_active():
+                self.se_wall.play()
         if self.ball_x > self.screen.get_width() - ball_radius:
             self.ball_x = self.screen.get_width() - ball_radius
             self.ball_speed_x = -self.ball_speed_x
+            if pygame.display.get_active():
+                self.se_wall.play()
 
         #for paddle
         if ball_rect.colliderect(paddle_rect):
@@ -138,12 +149,16 @@ class Breakout(object):
             self.current_reward = STATES['Hit']
             self.ball_hit_count +=1
             self.paddle_hit_count +=1
+            if pygame.display.get_active():
+                self.se_paddle.play()
 
             if len(self.bricks) == 0:
                 self.initBricks()
         #for bricks
         for brick in self.bricks:
             if brick.rect.colliderect(ball_rect):
+                if pygame.display.get_active():
+                    self.se_brick.play()
                 self.score = self.score + 1
                 self.bricks.remove(brick)
                 self.ball_speed_y = - self.ball_speed_y
@@ -278,27 +293,19 @@ def save():
 
 
 if len(sys.argv) > 1:
-    try:
-        data = np.load(str(sys.argv[1]))
-        game = Breakout(data)
-        s = "Q loaded from " + str(sys.argv[1])+ " successfully."
-        print(s)
+    fname = str(sys.argv[1]).replace('.npz','')
 
-    except IOError:
-        s = "Error: can't find file or read data from " + str(sys.argv[1]) +", initializing a new Q matrix"
-        print(s)
-        game = Breakout(None)
+try:
+    data = np.load(str(fname)+'.npz')
+    game = Breakout(data)
+    s = "Q loaded from " + str(fname) + " successfully."
+    print(s)
 
-else:
-    try:
-        data = np.load(fname + '.npz')
-        game = Breakout(data)
-        s = "Q loaded from " + str(fname)+ " successfully."
-        print(s)
+except IOError:
+    s = "Error: can't find file or read data from " + str(fname) +".npz, initializing a new Q matrix"
+    print(s)
+    game = Breakout(None)
 
-    except:
-        print("Error on importing data, initializing a new Q matrix.")
-        game = Breakout(None)
 
 #game loop
 while game.input():

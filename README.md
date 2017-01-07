@@ -2,7 +2,7 @@
 
 ![demo_perfect2](https://cloud.githubusercontent.com/assets/12080537/21742786/6e8b9bb8-d530-11e6-8b7f-ca9c676d0d26.gif)
 
-A Q-learning Agent which plays breakout well.
+A Q-learning Agent which plays breakout well (won't lose). [Youtube Demo](https://youtu.be/mq_lFredCx8)
 
 The breakout game is based on [CoderDojoSV/beginner-python](https://github.com/CoderDojoSV/beginner-python)'s tutorial, and the Q-learning implementation is inspired by [SarvagyaVaish/FlappyBirdRL](http://sarvagyavaish.github.io/FlappyBirdRL/)
 

@@ -75,9 +75,33 @@ class Breakout(object):
         self.se_wall = pygame.mixer.Sound('sound/wall_hit.wav')
         self.se_paddle = pygame.mixer.Sound('sound/paddle_hit.wav')
 
+    def initBricks(self):
+        self.bricks = []
+        for i in range(1,9):
+            for j in range(1,5):
+                temp = Brick(70*i-35,50+20*j)
+                self.bricks.append(temp)
 
+    def resetGame(self):
+        #pygame.time.wait(2000)
+        self.ball_x = 300
+        self.ball_y = 450-ball_radius
+        self.ball_speed_x = 3
+        self.ball_speed_y = 5
 
+        self.randomAngle()
 
+        self.paddle_x = 300
+        self.paddle_y = 470
+        self.paddle_speed = 10
+        #self.paddle_vec = 0
+        self.com_vec = 0
+
+        self.score = 0
+        self.ball_hit_count = 0
+        self.paddle_hit_count = 0
+
+        self.initBricks()
 
     def update(self):
         #if paddle_max_vec < abs(self.paddle_vec):
@@ -252,34 +276,6 @@ class Breakout(object):
     def quit(self):
         pygame.quit()
 
-    def initBricks(self):
-        self.bricks = []
-        for i in range(1,9):
-            for j in range(1,5):
-                temp = Brick(70*i-35,50+20*j)
-                self.bricks.append(temp)
-
-    def resetGame(self):
-        #pygame.time.wait(2000)
-        self.ball_x = 300
-        self.ball_y = 450-ball_radius
-        self.ball_speed_x = 3
-        self.ball_speed_y = 5
-
-        self.randomAngle()
-
-        self.paddle_x = 300
-        self.paddle_y = 470
-        self.paddle_speed = 12
-        #self.paddle_vec = 0
-        self.com_vec = 0
-
-        self.score = 0
-        self.ball_hit_count = 0
-        self.paddle_hit_count = 0
-
-        self.initBricks()
-
     def saveData(self):
         data = [int(self.iteration), int(self.highscore),self.Q]
         return data
@@ -295,23 +291,25 @@ def save():
 if len(sys.argv) > 1:
     fname = str(sys.argv[1]).replace('.npz','')
 
-try:
-    data = np.load(str(fname)+'.npz')
-    game = Breakout(data)
-    s = "Q loaded from " + str(fname) + " successfully."
-    print(s)
+    try:
+        data = np.load(str(fname)+'.npz')
+        game = Breakout(data)
+        s = "Q loaded from " + str(fname) + " successfully."
+        print(s)
 
-except IOError:
-    s = "Error: can't find file or read data from " + str(fname) +".npz, initializing a new Q matrix"
-    print(s)
-    game = Breakout(None)
+    except IOError:
+        s = "Error: can't find file or read data from " + str(fname) +".npz, initializing a new Q matrix"
+        print(s)
+        game = Breakout(None)
 
 
-#game loop
-while game.input():
-    game.decision()
-    game.update()
-    game.observe()
-    game.draw()
+    #game loop
+    while game.input():
+        game.decision()
+        game.update()
+        game.observe()
+        game.draw()
 
-game.quit()
+    game.quit()
+else:
+    print('INPUT ERROR: no file name provided. Read README.md for help.')
